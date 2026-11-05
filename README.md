@@ -25,18 +25,18 @@ Linux + systemd；root；x86_64、ARM64 或 ARMv7。
 
 下载并审阅 xray-go-safe.sh，然后运行：
 
-\`\`\`bash
+~~~bash
 bash xray-go-safe.sh
-\`\`\`
+~~~
 
 按提示输入 H3 UDP 端口，默认 8443。节点 URI 保存于 /opt/xray-go/node.txt。
 
 查看服务：
 
-\`\`\`bash
+~~~bash
 systemctl status xray-go --no-pager
 journalctl -u xray-go -e --no-pager
-\`\`\`
+~~~
 
 ## 防火墙
 
@@ -54,8 +54,8 @@ TLS ALPN 仅设置 h3，Xray 将使用 QUIC/UDP 监听。此配置没有 H2/TCP 
 
 下载并审阅 xray-go-safe-uninstall.sh，然后运行：
 
-\`\`\`bash
+~~~bash
 bash xray-go-safe-uninstall.sh
-\`\`\`
+~~~
 
 输入 YES 才会继续。卸载只处理 xray-go.service、/opt/xray-go 和本安装器创建的同名账户/组。不会处理普通 xray.service、x-ui、cloudflared、/etc/xray 或防火墙规则。
