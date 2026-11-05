@@ -28,7 +28,7 @@ rollback(){
  rc=$?
  if (( rc != 0 )); then
    echo "安装失败，回滚本脚本创建的资源" >&2
-   if (( MADE_UNIT )); then rm -f "$UNIT"; systemctl daemon-reload >/dev/null 2>&1 || true; fi
+   if (( MADE_UNIT )); then systemctl disable --now xray-go.service >/dev/null 2>&1 || true; rm -f "$UNIT"; systemctl daemon-reload >/dev/null 2>&1 || true; fi
    if (( MADE_DIR )); then rm -rf "$BASE"; fi
    if (( MADE_USER )); then userdel "$SVC_USER" >/dev/null 2>&1 || true; fi
    if (( MADE_GROUP )); then groupdel "$SVC_USER" >/dev/null 2>&1 || true; fi
