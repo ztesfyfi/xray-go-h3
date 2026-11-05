@@ -46,8 +46,8 @@ groupadd --system "$SVC_USER"
 MADE_GROUP=1
 useradd --system --gid "$SVC_USER" --no-create-home --home-dir /nonexistent --shell /usr/sbin/nologin "$SVC_USER"
 MADE_USER=1
-install -d -o root -g "$SVC_USER" -m 0750 "$BASE" "$BASE/bin" "$BASE/config" "$BASE/cert"
 MADE_DIR=1
+install -d -o root -g "$SVC_USER" -m 0750 "$BASE" "$BASE/bin" "$BASE/config" "$BASE/cert"
 install -d -o "$SVC_USER" -g "$SVC_USER" -m 0750 "$BASE/logs"
 install -o root -g "$SVC_USER" -m 0750 "$TMP/unpack/xray" "$BASE/bin/xray"
 UUID=$(cat /proc/sys/kernel/random/uuid)
