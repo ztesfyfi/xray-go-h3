@@ -9,7 +9,7 @@ say(){ printf '\033[1;32m%s\033[0m\n' "$*"; }
 die(){ printf '错误：%s\n' "$*" >&2; exit 1; }
 [[ $EUID -eq 0 ]] || die "请使用 root 运行"
 [[ -d /run/systemd/system ]] || die "仅支持 systemd 系统"
-for c in curl unzip openssl systemctl ss awk; do command -v "$c" >/dev/null 2>&1 || die "缺少依赖 $c；脚本不会自动安装依赖"; done
+for c in curl unzip openssl systemctl ss awk grep; do command -v "$c" >/dev/null 2>&1 || die "缺少依赖 $c；脚本不会自动安装依赖"; done
 [[ ! -e "$BASE" && ! -e "$UNIT" ]] || die "项目目录或服务文件已存在，为避免覆盖已停止"
 if id "$SVC_USER" >/dev/null 2>&1 || getent group "$SVC_USER" >/dev/null 2>&1; then die "系统账户或组 xray-go 已存在，为避免冲突已停止"; fi
 read -r -p "H3 UDP 端口 [8443]: " PORT
@@ -23,7 +23,7 @@ case "$(uname -m)" in
  *) die "不支持的 CPU 架构" ;;
 esac
 TMP=$(mktemp -d)
-MADE_USER=0; MADE_DIR=0; MADE_UNIT=0
+MADE_USER=0; MADE_GROUP=0; MADE_DIR=0; MADE_UNIT=0
 rollback(){
  rc=$?
  if (( rc != 0 )); then
@@ -31,6 +31,7 @@ rollback(){
    if (( MADE_UNIT )); then rm -f "$UNIT"; systemctl daemon-reload >/dev/null 2>&1 || true; fi
    if (( MADE_DIR )); then rm -rf "$BASE"; fi
    if (( MADE_USER )); then userdel "$SVC_USER" >/dev/null 2>&1 || true; fi
+   if (( MADE_GROUP )); then groupdel "$SVC_USER" >/dev/null 2>&1 || true; fi
  fi
  rm -rf "$TMP"
  exit "$rc"
@@ -42,11 +43,12 @@ unzip -tq "$TMP/xray.zip" >/dev/null || die "发行包校验失败"
 mkdir "$TMP/unpack"; unzip -q "$TMP/xray.zip" -d "$TMP/unpack"
 [[ -s "$TMP/unpack/xray" ]] || die "发行包中未找到 xray"
 groupadd --system "$SVC_USER"
+MADE_GROUP=1
 useradd --system --gid "$SVC_USER" --no-create-home --home-dir /nonexistent --shell /usr/sbin/nologin "$SVC_USER"
 MADE_USER=1
 install -d -o root -g "$SVC_USER" -m 0750 "$BASE" "$BASE/bin" "$BASE/config" "$BASE/cert"
-install -d -o "$SVC_USER" -g "$SVC_USER" -m 0750 "$BASE/logs"
 MADE_DIR=1
+install -d -o "$SVC_USER" -g "$SVC_USER" -m 0750 "$BASE/logs"
 install -o root -g "$SVC_USER" -m 0750 "$TMP/unpack/xray" "$BASE/bin/xray"
 UUID=$(cat /proc/sys/kernel/random/uuid)
 PATH_ID=$(openssl rand -hex 16)
