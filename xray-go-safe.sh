@@ -46,7 +46,7 @@ esac
 
 # 域名模式要求用户提供与域名匹配的可信证书及私钥；留空则进入仅供测试的自签名模式。
 read -r -p "自有证书域名（留空使用仅供测试的 $TEST_SNI 自签名证书）: " SNI
-CERT_MODE= selfsigned
+CERT_MODE=selfsigned
 if [[ -n "$SNI" ]]; then
   [[ "$SNI" =~ ^([A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$ ]] || die "域名格式不正确"
   CERT_MODE=custom
