@@ -66,7 +66,7 @@ rm -f -- "$UNIT"
 systemctl daemon-reload
 systemctl reset-failed xray-go.service >/dev/null 2>&1 || true
 
-if [[ -f "$LOGROTATE" && ! -L "$LOGROTATE" ]]; then
+if [[ -d /etc/logrotate.d && ! -L /etc/logrotate.d && -f "$LOGROTATE" && ! -L "$LOGROTATE" ]]; then
   if cmp -s "$LOGROTATE" <(cat <<EOF
 # Xray-go-managed: v1
 $BASE/logs/*.log {
