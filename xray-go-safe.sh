@@ -102,7 +102,7 @@ if [[ "$CERT_MODE" == custom ]]; then
   openssl x509 -in "$CERT_SOURCE" -noout -checkhost "$SNI" >/dev/null 2>&1 || die "证书 SAN/CN 与输入域名不匹配"
   openssl x509 -in "$CERT_SOURCE" -noout -checkend 0 >/dev/null 2>&1 || die "证书已过期"
   CERT_PUB=$(openssl x509 -in "$CERT_SOURCE" -pubkey -noout) || die "无法读取证书公钥"
-  KEY_PUB=$(openssl pkey -in "$KEY_SOURCE" -pubout 2>/dev/null) || die "无法读取私钥或私钥格式不受支持"
+  KEY_PUB=$(openssl pkey -in "$KEY_SOURCE" -passin pass: -pubout 2>/dev/null) || die "无法读取私钥或私钥格式不受支持"
   [[ "$CERT_PUB" == "$KEY_PUB" ]] || die "证书与私钥不匹配"
 fi
 
