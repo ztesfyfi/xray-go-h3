@@ -95,7 +95,7 @@ done
 if [[ -d "$BASE/logs" && ! -L "$BASE/logs" ]]; then
   for f in "$BASE/logs/error.log" "$BASE/logs"/error.log.[0-9]*; do
     [[ -f "$f" && ! -L "$f" ]] || continue
-    name=\${f##*/}
+    name=${f##*/}
     [[ "$name" =~ ^error\.log(\.[0-9]+(\.gz)?)?$ ]] && rm -f -- "$f"
   done
 fi
