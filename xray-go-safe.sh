@@ -196,7 +196,7 @@ if [[ -z "$(ss -H -lun "sport = :$PORT" 2>/dev/null)" ]]; then
   die "服务进程已启动但未发现 UDP/$PORT 监听；已请求自动回滚"
 fi
 
-if command -v logrotate >/dev/null 2>&1 && [[ -d /etc/logrotate.d ]]; then
+if command -v logrotate >/dev/null 2>&1 && [[ -d /etc/logrotate.d && ! -L /etc/logrotate.d ]]; then
   MADE_LOGROTATE=1
   cat > "$LOGROTATE" <<EOF
 # Xray-go-managed: v1
