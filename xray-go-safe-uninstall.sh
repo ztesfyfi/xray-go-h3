@@ -44,7 +44,8 @@ if USER_ENTRY=$(getent passwd "$SVC_USER"); then
 fi
 if GROUP_ENTRY=$(getent group "$SVC_USER"); then
   IFS=: read -r _ _ CURRENT_GROUP_GID CURRENT_MEMBERS <<< "$GROUP_ENTRY"
-  if [[ "$CURRENT_GROUP_GID" == "$EXPECTED_GID" && -z "$CURRENT_MEMBERS" ]]; then
+  if [[ "$CURRENT_GROUP_GID" == "$EXPECTED_GID" && -z "$CURRENT_MEMBERS" ]] &&
+     ! getent passwd | awk -F: -v gid="$EXPECTED_GID" -v svc="$SVC_USER" '$1!=svc && $4==gid {found=1} END {exit !found}'; then
     REMOVE_GROUP=1
   else
     echo "警告：xray-go 组身份不符或存在成员，卸载时将保留该组。" >&2
@@ -86,7 +87,7 @@ EOF
   fi
 fi
 
-for f in "$BASE/bin/xray" "$BASE/config/config.json" "$BASE/cert/server.crt" "$BASE/cert/server.key" "$BASE/node.txt" "$BASE/$MARKER"; do
+for f in "$BASE/bin/xray" "$BASE/config/config.json" "$BASE/cert/server.crt" "$BASE/cert/server.key" "$BASE/node.txt"; do
   [[ ! -L "$f" ]] || { echo "警告：发现符号链接 $f，保留该文件。" >&2; continue; }
   [[ ! -f "$f" ]] || rm -f -- "$f"
 done
@@ -102,6 +103,16 @@ fi
 for d in bin config cert logs; do
   [[ -d "$BASE/$d" && ! -L "$BASE/$d" ]] && rmdir -- "$BASE/$d" 2>/dev/null || true
 done
+# 仅当目录中除了项目标记外已无其他内容，才移除标记并删除目录。
+shopt -s dotglob nullglob
+OTHER_CONTENT=0
+for item in "$BASE"/*; do
+  [[ "$item" == "$BASE/$MARKER" ]] || OTHER_CONTENT=1
+done
+shopt -u dotglob nullglob
+if (( ! OTHER_CONTENT )); then
+  rm -f -- "$BASE/$MARKER"
+fi
 if rmdir -- "$BASE" 2>/dev/null; then
   if (( REMOVE_USER )); then
     userdel "$SVC_USER" || echo "警告：删除 xray-go 账户失败，账户已保留。" >&2
